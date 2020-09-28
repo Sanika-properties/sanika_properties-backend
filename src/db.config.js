@@ -1,7 +1,7 @@
 require('dotenv').config();
 const app = require('express')();
 const mongoose = require('mongoose');
-const url = 'process.env.DBURL;
+const url = process.env.DBURL;
 
 
 module.exports = async function connectDb() {

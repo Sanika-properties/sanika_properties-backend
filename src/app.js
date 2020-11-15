@@ -15,6 +15,7 @@ const { isLoggedIn } = require('./middlewares/middleware');
 // requiring routes
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const propertyRoutes = require('./routes/propertyRoutes');
 
 
 app.use(cors())
@@ -27,6 +28,7 @@ app.use(express.json());
 // using routes
 app.use('/auth', authRoutes);
 app.use('/dashboard', isLoggedIn, dashboardRoutes);
+app.use('/property', propertyRoutes);
 
 
 

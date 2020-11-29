@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Property = require('./../models/property');
-const { property } = require('./../validations/propertyValidation');
+const { property } = require('./../validations');
 
 module.exports.getAll = async (req, res, next) => {
     const properties = await Property.find({});
@@ -29,16 +29,14 @@ module.exports.getOne = async (req, res, next) => {
 
 
 module.exports.create = async (req, res, next) => {
-    // validating the req.body 
-    const { error, value } = property.validate(req.body);
     try {
-        if (error) {
-            res.status(400);
-            throw new Error(error);
-        }
-        const newProperty = await Property.create(value);
-        const { _id, title } = newProperty;
-        res.status(201).json({ _id, title });
+        const newProperty = new Property(req.body);
+        newProperty.images = req.files.map(f => {
+            return ({ url: f.path, filename: f.filename });
+        });
+        newProperty.author = req.user._id;
+        await newProperty.save();
+        res.status(201).json(newProperty);
     } catch (err) {
         res.status(400);
         next(err);
@@ -50,16 +48,15 @@ module.exports.update = async (req, res, next) => {
     try {
         const { id } = req.params;
         if (mongoose.Types.ObjectId.isValid(id)) {
-            const { error, value } = property.validate(req.body);
-            if (error) {
-                res.status(400);
-                throw new Error(error);
-            }
             const { title, imageUrl, description } = req.body;
             const newlyUpdatedProperty = await Property.findByIdAndUpdate(id, { title, imageUrl, description }, { new: true });
             if (!newlyUpdatedProperty) {
                 throw new Error('wrong or invalid id🤦‍♂️');
             }
+            newlyUpdatedProperty.images = req.files.map(f => {
+                return ({ url: f.path, filename: f.filename });
+            });
+            await newlyUpdatedProperty.save();
             res.status(201).json(newlyUpdatedProperty);
         } else {
             res.status(422);

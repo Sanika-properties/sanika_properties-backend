@@ -6,6 +6,7 @@ const {
     logout_get,
     contact_post
 } = require('../controllers/authControllers');
+const { validateUser } = require('../validations');
 
 
 
@@ -14,9 +15,9 @@ const {
 
 
 
-router.post('/signup', signup_post);
+router.post('/signup', validateUser, signup_post);
 
-router.post('/login', login_post);
+router.post('/login', validateUser, login_post);
 
 router.get('/logout', logout_get);
 

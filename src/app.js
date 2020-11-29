@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const volleyball = require('volleyball');
+const morgan = require('morgan');
+
+
 
 
 // Database and listen to port
@@ -10,7 +12,7 @@ const connectDb = require('./db.config');
 connectDb();
 
 // middleware
-const { isLoggedIn } = require('./middlewares/middleware');
+const { isLoggedIn, checkTokenAndSetUser } = require('./middlewares/');
 
 // requiring routes
 const authRoutes = require('./routes/authRoutes');
@@ -19,16 +21,18 @@ const propertyRoutes = require('./routes/propertyRoutes');
 
 
 app.use(cors())
-app.use(volleyball);
+app.use(morgan('tiny'));
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(checkTokenAndSetUser);
 
 
 
 // using routes
 app.use('/auth', authRoutes);
 app.use('/dashboard', isLoggedIn, dashboardRoutes);
-app.use('/property', propertyRoutes);
+app.use('/property', isLoggedIn, propertyRoutes);
 
 
 
@@ -36,31 +40,34 @@ app.use('/property', propertyRoutes);
 app.get('/', (req, res, next) => {
     res.json({
         'status': 200,
-        'message': 'Hello from home route'
+        'message': 'Hello from home route',
+        'user': req.user
     });
 });
 
 
 
-
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    const err = new Error('Not Found');
-    err.status = 404;
+const notFound = (req, res, next) => {
+    res.status(404);
+    const err = new Error(`${req.originalUrl} not found`);
     next(err);
-});
-
+}
 
 // error handler
-app.use(function (err, req, res, next) {
+const errorHandler = (err, req, res, next) => {
     res.status(res.statusCode || 500);
     res.json({
         message: err.message,
-        error: req.app.get('env') === 'development' ? err.stack : {}
+        error: err.stack
     })
-});
+}
+
+app.use(notFound);
+app.use(errorHandler);
 
 
 
-const PORT = 3000 || process.env.DBURL;
+
+const PORT = 3000 || process.env.PORT;
 app.listen(PORT, () => console.log(`server started at ${PORT}`));

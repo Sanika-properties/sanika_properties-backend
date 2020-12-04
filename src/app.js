@@ -12,7 +12,7 @@ const connectDb = require('./db.config');
 connectDb();
 
 // middleware
-const { isLoggedIn, checkTokenAndSetUser } = require('./middlewares/');
+const { isLoggedIn, checkTokenAndSetUser, isAdmin } = require('./middlewares/');
 
 // requiring routes
 const authRoutes = require('./routes/authRoutes');
@@ -31,8 +31,8 @@ app.use(checkTokenAndSetUser);
 
 // using routes
 app.use('/auth', authRoutes);
-app.use('/dashboard', isLoggedIn, dashboardRoutes);
-app.use('/property', isLoggedIn, propertyRoutes);
+app.use('/dashboard', isLoggedIn, isAdmin, dashboardRoutes);
+app.use('/property', isLoggedIn, isAdmin, propertyRoutes);
 
 
 

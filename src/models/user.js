@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         require: true,
         minlength: 6
+    },
+    role: {
+        type: String,
+        require: true,
     }
 });
 

@@ -2,6 +2,16 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+
+const isAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        res.status(401);
+        const error = new Error('unauthorized 🚫')
+        next(error);
+    }
+    next();
+}
+
 const isLoggedIn = (req, res, next) => {
     if (!req.user) {
         res.status(401);
@@ -10,6 +20,7 @@ const isLoggedIn = (req, res, next) => {
     }
     next();
 }
+
 
 
 const checkTokenAndSetUser = (req, res, next) => {
@@ -31,5 +42,6 @@ const checkTokenAndSetUser = (req, res, next) => {
 
 module.exports = {
     isLoggedIn,
-    checkTokenAndSetUser
+    checkTokenAndSetUser,
+    isAdmin
 }

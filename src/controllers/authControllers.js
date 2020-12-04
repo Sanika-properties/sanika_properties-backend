@@ -11,8 +11,8 @@ const { user } = require('../validations');
 module.exports.signup_post = async (req, res, next) => {
     try {
         // value represents the user to be created whose password is hashed in mongoose hooks
-        const newUser = await User.create(req.body);
-        const data = { id: newUser._id, email: newUser.email };
+        const newUser = await User.create({ ...req.body, role: 'user' });
+        const data = { id: newUser._id, email: newUser.email, role: newUser.role };
         res.status(201).json(data);
     } catch (err) {
         if (err.name === 'MongoError' && err.code === 11000) {

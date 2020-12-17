@@ -1,7 +1,7 @@
 require('dotenv').config();
 const app = require('express')();
 const mongoose = require('mongoose');
-const url = process.env.DBURL || 'mongodb://localhost:27017/sanika-properties';
+const url = 'mongodb://localhost:27017/sanika-properties' || process.env.DBURL;
 
 
 module.exports = async function connectDb() {

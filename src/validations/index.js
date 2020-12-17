@@ -11,7 +11,8 @@ const user = Joi.object({
 const property = Joi.object({
     title: Joi.string().required(),
     // imageUrl: Joi.string().required(),
-    description: Joi.string().required()
+    description: Joi.string().required(),
+    location: Joi.string().required()
 });
 
 const validateUser = (req, res, next) => {

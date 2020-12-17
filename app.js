@@ -8,16 +8,16 @@ const morgan = require('morgan');
 
 
 // Database and listen to port
-const connectDb = require('./db.config');
+const connectDb = require('./src/db.config');
 connectDb();
 
 // middleware
-const { isLoggedIn, checkTokenAndSetUser, isAdmin } = require('./middlewares/');
+const { isLoggedIn, checkTokenAndSetUser, isAdmin } = require('./src/middlewares/');
 
 // requiring routes
-const authRoutes = require('./routes/authRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const propertyRoutes = require('./routes/propertyRoutes');
+const authRoutes = require('./src/routes/authRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+const propertyRoutes = require('./src/routes/propertyRoutes');
 
 
 app.use(cors())
@@ -69,5 +69,5 @@ app.use(errorHandler);
 
 
 
-const PORT = 3000 || process.env.PORT;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`server started at ${PORT}`));

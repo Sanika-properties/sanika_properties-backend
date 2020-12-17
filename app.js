@@ -32,7 +32,7 @@ app.use(checkTokenAndSetUser);
 // using routes
 app.use('/auth', authRoutes);
 app.use('/dashboard', isLoggedIn, isAdmin, dashboardRoutes);
-app.use('/property', isLoggedIn, isAdmin, propertyRoutes);
+app.use('/property', propertyRoutes);
 
 
 

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
+
+
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocodingClient = mbxGeocoding({ accessToken: mapBoxToken });
+
 const Property = require('./../models/property');
-const { property } = require('./../validations');
 
 module.exports.getAll = async (req, res, next) => {
     const properties = await Property.find({});
@@ -30,11 +35,21 @@ module.exports.getOne = async (req, res, next) => {
 
 module.exports.create = async (req, res, next) => {
     try {
-        const newProperty = new Property(req.body);
+        if (!req.files.length) throw new Error('image is required');
+        const newProperty = new Property({...req.body, locationName: req.body.location});
         newProperty.images = req.files.map(f => {
             return ({ url: f.path, filename: f.filename });
         });
         newProperty.author = req.user._id;
+
+
+        let response = await geocodingClient
+		  .forwardGeocode({
+		    query: req.body.location,
+		    limit: 1
+		  })
+		  .send();
+		newProperty.location = response.body.features[0].geometry;
         await newProperty.save();
         res.status(201).json(newProperty);
     } catch (err) {
@@ -48,16 +63,34 @@ module.exports.update = async (req, res, next) => {
     try {
         const { id } = req.params;
         if (mongoose.Types.ObjectId.isValid(id)) {
-            const { title, imageUrl, description } = req.body;
-            const newlyUpdatedProperty = await Property.findByIdAndUpdate(id, { title, imageUrl, description }, { new: true });
-            if (!newlyUpdatedProperty) {
-                throw new Error('wrong or invalid id🤦‍♂️');
+            const { location } = req.body;
+            const property = await Property.findByIdAndUpdate(id, {...req.body, locationName: location});
+            // if (!newlyUpdatedProperty) {
+            //     throw new Error('wrong or invalid id🤦‍♂️');
+            // }
+            if(req.files) {
+                // upload images url inserted in Db
+                const imgs = req.files.map(f => {
+                    return ({ url: f.path, filename: f.filename });
+                });
+                property.images.push(...imgs);
             }
-            newlyUpdatedProperty.images = req.files.map(f => {
-                return ({ url: f.path, filename: f.filename });
-            });
-            await newlyUpdatedProperty.save();
-            res.status(201).json(newlyUpdatedProperty);
+            
+
+            // need to check if location was updated
+            if(req.body.location !== property.locationName) {
+                let response = await geocodingClient
+                .forwardGeocode({
+                    query: location,
+                    limit: 1
+                })
+                .send();
+                property.location = response.body.features[0].geometry;
+            }
+            
+
+            await property.save();
+            res.status(201).json(property);
         } else {
             res.status(422);
             throw new Error('invalid id💀');
@@ -88,3 +121,21 @@ module.exports.remove = async (req, res, next) => {
     }
 }
 
+
+module.exports.search = async (req, res, next) => {
+    try {
+        console.log(req.body);
+        // const query = {
+        //     type:{},
+        //     location:{},
+        //     propertyType:{},
+        //     price:{},
+        // }
+       
+
+        const properties = await Property.find(query);
+        res.json(properties)
+    } catch (error) {
+        next(error);
+    }
+}

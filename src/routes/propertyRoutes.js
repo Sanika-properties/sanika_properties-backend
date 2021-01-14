@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getAll, getOne, create, remove, update } = require('./../controllers/propertyControllers');
+const { getAll, getOne, create, remove, update, search } = require('./../controllers/propertyControllers');
 const { validateProperty } = require('../validations')
 const { isLoggedIn, isAdmin } = require('../middlewares/index');
 const multer = require('multer');
 const { storage } = require('../../cloudinary');
 const upload = multer({ storage });
+
+router.get('/search', search);
 
 router.get('/', getAll);
 
@@ -16,5 +18,7 @@ router.post('/', isLoggedIn, isAdmin, upload.array('image'), validateProperty, c
 router.put('/:id', isLoggedIn, isAdmin, upload.array('image'), validateProperty, update);
 
 router.delete('/:id', isLoggedIn, isAdmin, remove);
+
+
 
 module.exports = router;

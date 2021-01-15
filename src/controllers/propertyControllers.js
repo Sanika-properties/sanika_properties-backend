@@ -8,8 +8,14 @@ const geocodingClient = mbxGeocoding({ accessToken: mapBoxToken });
 const Property = require('./../models/property');
 
 module.exports.getAll = async (req, res, next) => {
-    const properties = await Property.find({});
-    res.status(200).json(properties);
+    try {
+        console.log(JSON.stringify(req.query));
+        const properties = await Property.find(req.query);
+        res.status(200).json(properties);
+    } catch (error) {
+        res.status(400);
+        next(error)
+    }
 }
 
 module.exports.getOne = async (req, res, next) => {
@@ -121,21 +127,3 @@ module.exports.remove = async (req, res, next) => {
     }
 }
 
-
-module.exports.search = async (req, res, next) => {
-    try {
-        console.log(req.body);
-        // const query = {
-        //     type:{},
-        //     location:{},
-        //     propertyType:{},
-        //     price:{},
-        // }
-       
-
-        const properties = await Property.find(query);
-        res.json(properties)
-    } catch (error) {
-        next(error);
-    }
-}

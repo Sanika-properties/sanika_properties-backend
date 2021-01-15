@@ -2,14 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { getAll, getOne, create, remove, update, search } = require('./../controllers/propertyControllers');
 const { validateProperty } = require('../validations')
-const { isLoggedIn, isAdmin } = require('../middlewares/index');
+const { isLoggedIn, isAdmin, searchAndFilterProperty } = require('../middlewares/index');
 const multer = require('multer');
 const { storage } = require('../../cloudinary');
 const upload = multer({ storage });
 
-router.get('/search', search);
 
-router.get('/', getAll);
+router.get('/', searchAndFilterProperty, getAll);
 
 router.get('/:id', getOne);
 

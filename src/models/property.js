@@ -29,11 +29,11 @@ const propertySchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    locationName:{
+    location:{
         type: String,
         required:true
     },
-    location: {
+    geometry: {
         type: {
           type: String, 
           enum: ['Point'], 
@@ -47,7 +47,7 @@ const propertySchema = new mongoose.Schema({
 });
 
 
-propertySchema.index({ location: '2dsphere' });
+propertySchema.index({ geometry: '2dsphere' });
 
 
 module.exports = mongoose.model('Property', propertySchema);

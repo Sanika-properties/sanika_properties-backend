@@ -72,7 +72,7 @@ const searchAndFilterProperty = async (req, res, next) => {
             let maxDistance = distance || 25; // distance coming is in km
             maxDistance *= 1000;
             dbQueries.push({
-                location: {
+                geometry: {
                     $near: {
                         $geometry: {
                            type: "Point" ,

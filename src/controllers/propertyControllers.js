@@ -9,7 +9,6 @@ const Property = require('./../models/property');
 
 module.exports.getAll = async (req, res, next) => {
     try {
-        console.log(JSON.stringify(req.query));
         const properties = await Property.find(req.query);
         res.status(200).json(properties);
     } catch (error) {
@@ -42,7 +41,7 @@ module.exports.getOne = async (req, res, next) => {
 module.exports.create = async (req, res, next) => {
     try {
         if (!req.files.length) throw new Error('image is required');
-        const newProperty = new Property({...req.body, locationName: req.body.location});
+        const newProperty = new Property(req.body);
         newProperty.images = req.files.map(f => {
             return ({ url: f.path, filename: f.filename });
         });
@@ -55,7 +54,7 @@ module.exports.create = async (req, res, next) => {
 		    limit: 1
 		  })
 		  .send();
-		newProperty.location = response.body.features[0].geometry;
+		newProperty.geometry = response.body.features[0].geometry;
         await newProperty.save();
         res.status(201).json(newProperty);
     } catch (err) {
@@ -70,7 +69,7 @@ module.exports.update = async (req, res, next) => {
         const { id } = req.params;
         if (mongoose.Types.ObjectId.isValid(id)) {
             const { location } = req.body;
-            const property = await Property.findByIdAndUpdate(id, {...req.body, locationName: location});
+            const property = await Property.findByIdAndUpdate(id, req.body);
             // if (!newlyUpdatedProperty) {
             //     throw new Error('wrong or invalid id🤦‍♂️');
             // }

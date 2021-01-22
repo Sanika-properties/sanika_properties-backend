@@ -67,6 +67,9 @@ const searchAndFilterProperty = async (req, res, next) => {
                         limit: 1
                     })
                     .send();
+                if(!response.body.features.length){
+                    console.log('error catch this');
+                }
                 coordinates = response.body.features[0].geometry.coordinates;
             }
             let maxDistance = distance || 25; // distance coming is in km

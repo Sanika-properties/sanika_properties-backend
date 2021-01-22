@@ -10,9 +10,17 @@ const user = Joi.object({
 
 const property = Joi.object({
     title: Joi.string().required(),
+<<<<<<< HEAD
     // imageUrl: Joi.string().required(),
     description: Joi.string().required(),
     location: Joi.string().required()
+=======
+    description: Joi.string().required(),
+    purpose: Joi.string().allow('Buy', 'Sell').required(),
+    price: Joi.number().required(),
+    location: Joi.string().required(),
+    images: Joi.object(),
+>>>>>>> develop
 });
 
 const validateUser = (req, res, next) => {

@@ -1,5 +1,10 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocodingClient = mbxGeocoding({ accessToken: mapBoxToken });
+
 const User = require('../models/user');
 
 
@@ -40,8 +45,68 @@ const checkTokenAndSetUser = (req, res, next) => {
 }
 
 
+const searchAndFilterProperty = async (req, res, next) => {
+    const queryKeys = Object.keys(req.query);
+
+    if(queryKeys.length) {
+        const dbQueries = [];
+        let { minPrice, maxPrice , location, distance, purpose } = req.query;
+
+        if (location) {
+            let coordinates;
+            try {
+                if(typeof JSON.parse(location) === 'number') {
+                    throw new Error;
+                }
+                location = JSON.parse(location);
+                coordinates = location;
+            } catch(err) {
+                const response = await geocodingClient
+                    .forwardGeocode({
+                        query: location,
+                        limit: 1
+                    })
+                    .send();
+                if(!response.body.features.length){
+                    console.log('error catch this');
+                }
+                coordinates = response.body.features[0].geometry.coordinates;
+            }
+            let maxDistance = distance || 25; // distance coming is in km
+            maxDistance *= 1000;
+            dbQueries.push({
+                geometry: {
+                    $near: {
+                        $geometry: {
+                           type: "Point" ,
+                           coordinates: coordinates //lng lat
+                        },
+                        $maxDistance: maxDistance
+                      }
+                }
+            });
+        }
+
+        if (purpose) {
+            dbQueries.push({ purpose: purpose });
+        }
+        if (minPrice) {
+            dbQueries.push({ price: { $gte: minPrice } });
+        }
+        if(maxPrice){
+            dbQueries.push({ price: { $lte: maxPrice } });
+        }
+
+        req.query = dbQueries.length ? {$and: dbQueries} : {};
+    }
+
+    next();
+}
+
+
 module.exports = {
     isLoggedIn,
     checkTokenAndSetUser,
-    isAdmin
+    isAdmin,
+    searchAndFilterProperty
 }
